@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Trodo</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+		<link rel="stylesheet" href="https://unpkg.com/bulma@0.8.0/css/bulma.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/admin.css">
+	</head>
+	<body>
+		<div id="app">
+			<!-- START TITLE -->
+			<section class="hero is-info is-bold">
+				<div class="hero-body">
+					<div class="container has-text-centered">
+						<h1 class="title">
+						BTTS
+						</h1>
+						<h2 class="subtitle">
+						teste de indicação das forças de defesa e ataque
+						</h2>
+					</div>
+				</div>
+			</section>
+			<!-- END TITLE -->
+
+			<!-- START NAV -->
+			<nav class="navbar is-white">
+				<div class="container">
+					<div class="navbar-brand">
+						<p class="navbar-item brand-text">
+							BTTS
+						</p>
+						<div class="navbar-burger burger" data-target="navMenu">
+							<span></span>
+							<span></span>
+							<span></span>
+						</div>
+					</div>
+					<div id="navMenu" class="navbar-menu">
+						<div class="navbar-start">
+							<a class="navbar-item is-tab" href="index.html">
+								Fazer previsão
+							</a>
+							<a class="navbar-item is-tab is-active" href="campeonato.html">
+								Visualizar campeonato
+							</a>
+						</div>
+					</div>
+				</div>
+			</nav>
+			<!-- END NAV -->
+
+			<div class="container">
+				<div class="columns">
+					<div class="column is-6">
+						<div class="card events-card">
+							<header class="card-header">
+								<p class="card-header-title">
+									{{liga.nome}}
+								</p>
+							</header>
+							<div class="card-table">
+								<div class="content">
+									<table class="table is-fullwidth is-striped">
+										<tbody>
+											<tr v-for="(time, index) in timesComputados()">
+												<td>{{index+1}}. {{time.name}} ({{time.score}})</td>
+												<td class="level-right">
+													<span
+														v-for="hst in lastMatches(5, time.hst)"
+														class="tag is-small is-rounded"
+														:class="classeResultado(hst)"
+													>
+													  {{labelResultado(hst)}}
+													</span>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="column is-6">
+						<div class="card events-card">
+							<header class="card-header">
+								<p class="card-header-title">
+									Rodada {{index_rodada+1}}
+								</p>
+								<div
+									class="dropdown card-header-icon"
+									:class="is_dropdown_active?'is-active':''"
+								>
+								  <div class="dropdown-trigger">
+								    <button class="button" aria-haspopup="true" aria-controls="dropdown-menu" @click="switchDropdown()">
+								      <span>Selecionar rodada</span>
+								      <span class="icon is-small">
+								        <i class="fa fa-angle-down" aria-hidden="true"></i>
+								      </span>
+								    </button>
+								  </div>
+								  <div class="dropdown-menu" id="dropdown-menu" role="menu">
+								    <div class="dropdown-content">
+								      <a class="dropdown-item" v-for="(rodada, index) in getFullHistory()" @click="selectRodada(index)">
+								        rodada {{index+1}}
+								      </a>
+								    </div>
+								  </div>
+								</div>
+							</header>
+							<div class="card-table">
+								<div class="content">
+									<table class="table is-fullwidth is-striped">
+										<tbody>
+											<tr v-for="match in matchesRodada(index_rodada)">
+												<td>
+													{{match.team1.code}}-
+													{{match.team1.name}}
+												</td>
+												<td class="is-centered">
+													<span class="tag is-primary">
+														{{match.score1}} - {{match.score2}}
+													</span>
+													<br>
+													<span class="tag">
+														{{
+															previsoesGols1(
+															match.team1.code,
+															match.team2.code,
+															index_rodada)
+														}} - {{
+															previsoesGols2(
+															match.team1.code,
+															match.team2.code,
+															index_rodada)
+														}}
+													</span>
+												</td>
+												<td>
+													{{match.team2.code}}-
+													{{match.team2.name}}
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="container">
+				<div class="columns">
+					<div class="column is-12">
+						<div class="card events-card">
+							<header class="card-header">
+								<p class="card-header-title">
+									Avaliaçao de desempenho
+								</p>
+							</header>
+							<div class="card-table">
+								<div class="content">
+									<table class="table is-fullwidth">
+										<tbody>
+											<tr>
+												<td></td>
+												<td v-for="code in tableClubs()">
+													<a class="button is-small is-light" href="#">
+														{{code}}
+													</a>
+												</td>
+											</tr>
+											<tr v-for="(rodada, index_rodada) in getFullHistory()">
+												<td>Rodada {{index_rodada+1}}</td>
+												<td v-for="previsoes_club in previsoesRodadaClub(index_rodada)">
+													<a
+													v-for="prev in previsoes_club"
+													class="button is-small"
+													:class="prev.status"
+													@click="simularMatchByCodes(prev.code1, prev.code2, index_rodada)"
+													>
+														{{prev.mercado}}
+													</a>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+		
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<script src="data/clubs.js"></script>
+		<script src="data/matches.js"></script>
+		<script src="js/campeonato.js"></script>
+	</body>
+</html>
